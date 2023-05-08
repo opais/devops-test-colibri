@@ -3,6 +3,7 @@ import sys
 import re
 import mysql.connector
 
+# TODO: This sort function will break if the filenames it gets don't contain digits
 def sort_key(filename):
     numeric_prefix = re.findall('\d+', filename)
     numeric_value = int(numeric_prefix[0])
@@ -14,6 +15,7 @@ if len(sys.argv) != 5:
     print("Usage: python upgrade_db.py your_username host db_name your_password")
     sys.exit(1)
 
+# TODO: These inputs should be sanitised
 username = sys.argv[1]
 host = sys.argv[2]
 db_name = sys.argv[3]
@@ -49,7 +51,8 @@ conn = mysql.connector.connect(**db_config)
 cursor = conn.cursor()
 cursor.execute('SELECT version FROM versionTable')
 current_version = cursor.fetchone()[0]
-print(current_version)
+
+# TODO: We should have some error handling and error messages, right now, if something isn't right the script will just fail
 # Execute the scripts that have a higher version number than the current version
 for script_file in script_files:
     script_version = re.findall('\d+', script_file)
