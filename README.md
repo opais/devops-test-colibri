@@ -96,13 +96,14 @@ docker exec -it exec_container /bin/bash
 Run your script using
 
 ```sh
-/submissionscript/<yourscript.lang> /scripts/ dev mysql_container devopstt 123456`
+/submissionscript/<yourscript.lang> dev mysql_container devopstt 123456`
 ```
 
 You can then run the automated test to check if successful
 
 ``` sh
-pytest /scripts/db_test.py
+cd scripts
+pytest db_test.py
 ```
 
 ## Database credentials

@@ -1,6 +1,8 @@
 import os
 import sys
 import re
+import mysql.connector
+
 def sort_key(filename):
     numeric_prefix = re.findall('\d+', filename)
     numeric_value = int(numeric_prefix[0])
@@ -20,7 +22,6 @@ password = sys.argv[4]
 # Set directory to read upgrade scripts from
 script_dir = 'scripts/'
 
-
 # Get a list of all the SQL script files in the scripts directory
 dir_files = os.listdir(script_dir)
 script_files = []
@@ -34,8 +35,35 @@ for file in dir_files:
 # Sort the files by their numeric prefix, then by their filename
 script_files.sort(key=sort_key)
 
+# Connect to the database
+db_config = {
+  'user': username,
+  'password': password,
+  'host': host,
+  'database': db_name,
+  'raise_on_warnings': True
+}
+conn = mysql.connector.connect(**db_config)
+
+# Get the current database version from the versionTable
+cursor = conn.cursor()
+cursor.execute('SELECT version FROM versionTable')
+current_version = cursor.fetchone()[0]
+print(current_version)
 # Execute the scripts that have a higher version number than the current version
 for script_file in script_files:
-    print(script_file)
+    script_version = re.findall('\d+', script_file)
+    script_version = int(script_version[0])
 
+    if script_version > current_version:
+        with open(os.path.join(script_dir, script_file), 'r') as f:
+            print(script_file)
+            script = f.read()
+            cursor.execute(script)
+            current_version = script_version
+            cursor.execute('UPDATE versionTable SET version = %s', (current_version,))
+            conn.commit()
+
+# Close the database connection
+conn.close()
 
